@@ -18,7 +18,7 @@ describe 'postgresql::server', :type => :class do
     it { is_expected.to contain_class("postgresql::params") }
     it { is_expected.to contain_class("postgresql::server") }
     it { is_expected.to contain_exec('postgresql_reload').with({
-      'command' => 'service postgresql reload',
+      'command' => 'systemctl reload postgresql',
     })
     }
     it 'should validate connection' do

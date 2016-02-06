@@ -29,8 +29,7 @@ class puppetdb::master::config (
   $restart_puppet              = true,
 ) inherits puppetdb::params {
 
-  # notify { "$terminus_package": }
-  # notify { "$puppetdb::params::puppetdb_version": }
+
   package { $terminus_package:
     ensure => $puppetdb::params::puppetdb_version,
   }

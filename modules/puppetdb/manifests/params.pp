@@ -111,7 +111,7 @@ class puppetdb::params inherits puppetdb::globals {
         $ssl_dir                = '/usr/local/etc/puppetlabs/puppetdb/ssl'
       }
     }
-    $terminus_package       = 'puppetdb-terminus'
+    $terminus_package       = 'puppetdb-termini'
     $test_url               = '/pdb/meta/v1/version'
     $database_embedded_path = '/opt/puppetlabs/server/data/puppetdb/db/db'
   }
