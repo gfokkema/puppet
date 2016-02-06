@@ -24,4 +24,9 @@ class site::basic {
       ensure => $state,
     }
   }
+
+  file { '/usr/bin/vi':
+    ensure => 'link',
+    target => 'vim',
+  }
 }
