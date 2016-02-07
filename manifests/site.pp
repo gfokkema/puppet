@@ -1,6 +1,6 @@
 node default {
-  class { 'helloworld': }
   class { 'site::basic': }
+  class { 'site::config': }
 
   case $::networking[hostname] {
     'puppet': { class { 'puppetdb':

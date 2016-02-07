@@ -1,0 +1,5 @@
+unbind C-b
+set-option -g prefix C-a
+
+bind-key   a   send-prefix
+bind-key   r   source-file /etc/tmux.conf \; display-message "Config reloaded."

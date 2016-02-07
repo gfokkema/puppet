@@ -3,6 +3,7 @@ class site::basic {
   [ 'abs',
     'base-devel',
     'bash-completion',
+    'git',
     'lsof',
     'mlocate',
     'openssh',
@@ -25,8 +26,4 @@ class site::basic {
     }
   }
 
-  file { '/usr/bin/vi':
-    ensure => 'link',
-    target => 'vim',
-  }
 }
