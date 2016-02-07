@@ -12,8 +12,9 @@ class site::basic {
   $remove =
   [ 'vi', ]
 
-  $basic = { 'present' => $install,
-             'absent'  => $remove, }
+  $basic =
+  { 'present' => $install,
+    'absent'  => $remove, }
   $service = { 'running' => [ 'sshd', ] }
 
   $packagehash = $::os[family] ? {

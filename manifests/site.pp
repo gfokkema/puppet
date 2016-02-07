@@ -8,6 +8,8 @@ node default {
                           manage_package_repo => false,
                           store_usage         => 2000,
                           temp_usage          => 2000, }
-                class { 'puppetdb::master::config': } }
+                class { 'puppetdb::master::config': }
+                package { 'puppet-lint':
+                            ensure => 'present', } }
   }
 }
