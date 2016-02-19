@@ -1,0 +1,9 @@
+[Unit]
+Description=SMART status mailer
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
