@@ -23,8 +23,8 @@ class site::config(
       target   => $rc, }
   }.each | $index, $rc | {
     file { $rc['target']:
-      ensure  => 'file',
-      content => template("site/${rc['basename']}.erb"),
+      ensure => 'file',
+      source => "puppet://puppet/modules/site/${rc['basename']}",
     }
   }
 
