@@ -3,14 +3,23 @@ class site::config(
   [ '/etc/bash.bashrc',
     '/etc/tmux.conf',
     '/etc/vimrc', ],
-  String $completion            = '/etc/bash_completion.d',
   Array[String] $completion_map =
   [ '/usr/share/git/completion/git-prompt.sh',
     '/usr/share/git/completion/git-completion.bash', ],
+
+  String $completion            = '/etc/bash_completion.d',
 ) {
   service { 'puppet':
     ensure => 'running',
     enable => true,
+  }
+
+  site::timer { 'pacaur': 
+    description => 'PacAur Autoupdater',
+    oncalendar  => 'daily',
+    execstart   => '/usr/bin/bash -c "pacaur -Syu --color never \
+                    --noconfirm --noedit --noprogressbar \
+                    | mail -s \'PacAur Autoupdater\' -v gerlof.fokkema@gmail.com"'
   }
 
   file { '/usr/bin/vi':
@@ -18,7 +27,11 @@ class site::config(
     target => 'vim',
   }
 
-  $rc_base_map = $rc_map.map | $rc | {
+  #
+  # Install dotfiles to the location specified in $rc_map.
+  # Puppet will look for the source in {module_path}/basename($rc_file)
+  #
+  $rc_map.map | $rc | {
     { basename => basename($rc),
       target   => $rc, }
   }.each | $index, $rc | {
@@ -28,11 +41,14 @@ class site::config(
     }
   }
 
+  #
+  # Install BASH completion symlinks from source files specified in $completion_map.
+  # Puppet will name these links as basename($completion_file)
+  #
   file { $completion:
     ensure => 'directory',
   }
-
-  $base_map = $completion_map.map | $script | {
+  $completion_map.map | $script | {
     { basename => basename($script),
       target   => $script, }
   }.each | $index, $script | {

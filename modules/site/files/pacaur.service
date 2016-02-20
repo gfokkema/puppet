@@ -1,9 +1,0 @@
-[Unit]
-Description=PacAur Autoupdater
-Requires=
-After=network.target
-
-[Service]
-Type=oneshot
-User=gerlof
-ExecStart=/usr/bin/bash -c "pacaur -Syu --color never --noconfirm --noedit --noprogressbar | mail -s 'PacAur Autoupdater' -v gerlof.fokkema@gmail.com"

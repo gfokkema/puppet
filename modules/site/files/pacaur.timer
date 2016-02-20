@@ -1,9 +1,0 @@
-[Unit]
-Description=PacAur Autoupdater
-
-[Timer]
-OnCalendar=daily
-Persistent=true
-
-[Install]
-WantedBy=timers.target
