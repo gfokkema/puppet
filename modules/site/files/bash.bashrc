@@ -1,101 +1,140 @@
-### THIS FILE IS MANAGED BY PUPPET! DO NOT EDIT! ###
-# /etc/bash.bashrc
-#
-# https://wiki.archlinux.org/index.php/Color_Bash_Prompt
+# /etc/bash/bashrc
 #
 # This file is sourced by all *interactive* bash shells on startup,
 # including some apparently interactive shells such as scp and rcp
-# that can't tolerate any output. So make sure this doesn't display
+# that can't tolerate any output.  So make sure this doesn't display
 # anything or bad things will happen !
 
-# Test for an interactive shell. There is no need to set anything
+
+# Test for an interactive shell.  There is no need to set anything
 # past this point for scp and rcp, and it's important to refrain from
 # outputting anything in those cases.
-
-# If not running interactively, don't do anything!
-[[ $- != *i* ]] && return
+if [[ $- != *i* ]] ; then
+  # Shell is non-interactive.  Be done now!
+  return
+fi
 
 # Bash won't get SIGWINCH if another process is in the foreground.
 # Enable checkwinsize so that bash will check the terminal size when
-# it regains control.
+# it regains control.  #65623
 # http://cnswww.cns.cwru.edu/~chet/bash/FAQ (E11)
 shopt -s checkwinsize
 
-# Enable history appending instead of overwriting.
+# Disable completion when the input buffer is empty.  i.e. Hitting tab
+# and waiting a long time for bash to expand all of $PATH.
+shopt -s no_empty_cmd_completion
+
+# Enable history appending instead of overwriting when exiting.  #139609
 shopt -s histappend
 
+# Save each command to the history file as it's executed.  #517342
+# This does mean sessions get interleaved when reading later on, but this
+# way the history is always up to date.  History is not synced across live
+# sessions though; that is what `history -n` does.
+# Disabled by default due to concerns related to system recovery when $HOME
+# is under duress, or lives somewhere flaky (like NFS).  Constantly syncing
+# the history will halt the shell prompt until it's finished.
+#PROMPT_COMMAND='history -a'
+
+# Change the window title of X terminals 
 case ${TERM} in
-  xterm*|rxvt*|Eterm|aterm|kterm|gnome*)
-    PROMPT_COMMAND=${PROMPT_COMMAND:+$PROMPT_COMMAND; }'printf "\033]0;%s@%s:%s\007" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/~}"'
+  [aEkx]term*|rxvt*|gnome*|konsole*|interix)
+    PS1='\[\033]0;\u@\h:\w\007\]'
     ;;
-  screen)
-    PROMPT_COMMAND=${PROMPT_COMMAND:+$PROMPT_COMMAND; }'printf "\033_%s@%s:%s\033\\" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/~}"'
+  screen*)
+    PS1='\[\033k\u@\h:\w\033\\\]'
+    ;;
+  *)
+    unset PS1
     ;;
 esac
 
-# fortune is a simple program that displays a pseudorandom message
-# from a database of quotations at logon and/or logout.
-# If you wish to use it uncomment the following line:
-
-# [[ "$PS1" ]] && /usr/bin/fortune
-
 # Set colorful PS1 only on colorful terminals.
 # dircolors --print-database uses its own built-in database
-# instead of using /etc/DIR_COLORS. Try to use the external file
-# first to take advantage of user additions. Use internal bash
-# globbing instead of external grep binary.
-
-# sanitize TERM:
-safe_term=${TERM//[^[:alnum:]]/?}
-match_lhs=""
-
-[[ -f ~/.dir_colors ]] && match_lhs="${match_lhs}$(<~/.dir_colors)"
-[[ -f /etc/DIR_COLORS ]] && match_lhs="${match_lhs}$(</etc/DIR_COLORS)"
-[[ -z ${match_lhs} ]] \
-  && type -P dircolors >/dev/null \
-  && match_lhs=$(dircolors --print-database)
-
-if [[ $'\n'${match_lhs} == *$'\n'"TERM "${safe_term}* ]] ; then
-
-  # we have colors :-)
-
-  # Enable colors for ls, etc. Prefer ~/.dir_colors
-  if type -P dircolors >/dev/null ; then
-    if [[ -f ~/.dir_colors ]] ; then
-      eval $(dircolors -b ~/.dir_colors)
-    elif [[ -f /etc/DIR_COLORS ]] ; then
-      eval $(dircolors -b /etc/DIR_COLORS)
-    fi
-  fi
-
-  GIT_PS1='\[\e[01;31m\]$(__git_ps1)'
-  PS1="\[\e[01;34m\]\w${GIT_PS1} \[\e[01;34m\]\\$\[\e[00m\] "
-  if [[ ${EUID} == 0 ]]; then
-    PS1="\[\e[01;31m\]\h $PS1"
+# instead of using /etc/DIR_COLORS.  Try to use the external file
+# first to take advantage of user additions.
+use_color=false
+if type -P dircolors >/dev/null ; then
+  # Enable colors for ls, etc.  Prefer ~/.dir_colors #64489
+  LS_COLORS=
+  if [[ -f ~/.dir_colors ]] ; then
+    # If you have a custom file, chances are high that it's not the default.
+    used_default_dircolors="no"
+    eval "$(dircolors -b ~/.dir_colors)"
+  elif [[ -f /etc/DIR_COLORS ]] ; then
+    # People might have customized the system database.
+    used_default_dircolors="maybe"
+    eval "$(dircolors -b /etc/DIR_COLORS)"
   else
-    PS1="┌─\[\e[01;32m\]\u@\h $PS1\n└─╼"
+    used_default_dircolors="yes"
+    eval "$(dircolors -b)"
   fi
+  if [[ -n ${LS_COLORS:+set} ]] ; then
+    use_color=true
+
+    # The majority of systems out there do not customize these files, so we
+    # want to avoid always exporting the large $LS_COLORS variable.  This
+    # keeps the active env smaller, and it means we don't have to deal with
+    # running new/old (incompatible) versions of `ls` compared to when we
+    # last sourced this file.
+    case ${used_default_dircolors} in
+    no) ;;
+    yes) unset LS_COLORS ;;
+    *)
+      ls_colors=$(eval "$(dircolors -b)"; echo "${LS_COLORS}")
+      if [[ ${ls_colors} == "${LS_COLORS}" ]] ; then
+        unset LS_COLORS
+      fi
+      ;;
+    esac
+  fi
+  unset used_default_dircolors
+else
+  # Some systems (e.g. BSD & embedded) don't typically come with
+  # dircolors so we need to hardcode some terminals in here.
+  case ${TERM} in
+  [aEkx]term*|rxvt*|gnome*|konsole*|screen|cons25|*color) use_color=true;;
+  esac
+fi
+
+if ${use_color} ; then
+  WHITE="\[\e[01;00m\]"
+  RED="\[\e[01;31m\]"
+  GREEN="\[\e[01;32m\]"
+  BLUE="\[\e[01;34m\]"
+
+  GIT_PS1=${RED}'$(__git_ps1)'
+  WORKDIR="${BLUE}\w"
+  INDICATOR="${BLUE}\\$"
+  if [[ ${EUID} == 0 ]]; then
+    USER_HOST="${RED}\h"
+  else
+    USER_HOST="${GREEN}\u@\h"
+  fi
+  PS1="┌─${USER_HOST} ${WORKDIR}${GIT_PS1} ${INDICATOR}${WHITE}\n└─╼"
 
   alias ls="ls --color=auto"
   alias dir="dir --color=auto"
   alias grep="grep --color=auto"
+  alias egrep="egrep --colour=auto"
+  alias fgrep="fgrep --colour=auto"
   alias dmesg="dmesg --color"
   alias less="less -r"
 else
-  # show root@ when we do not have colors
-  PS1="\u@\h \w \$([[ \$? != 0 ]] && echo \":( \")\$ "
-
-  # Use this other PS1 string if you want \W for root and \w for all other users:
-  # PS1="\u@\h $(if [[ ${EUID} == 0 ]]; then echo '\W'; else echo '\w'; fi) \$([[ \$? != 0 ]] && echo \":( \")\$ "
-
+  if [[ ${EUID} == 0 ]] ; then
+    # show root@ when we don't have colors
+    PS1+='\u@\h \W \$ '
+  else
+    PS1+='\u@\h \w \$ '
+  fi
 fi
 
-PS2="> "
-PS3="> "
-PS4="+ "
+for sh in /etc/bash/bashrc.d/* ; do
+  [[ -r ${sh} ]] && source "${sh}"
+done
 
 # Try to keep environment pollution down, EPA loves us.
-unset safe_term match_lhs
+unset use_color sh
 
 # Try to enable the auto-completion (type: "pacman -S bash-completion" to install it).
 [ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
@@ -103,3 +142,9 @@ unset safe_term match_lhs
 # Try to enable the "Command not found" hook ("pacman -S pkgfile" to install it).
 # See also: https://wiki.archlinux.org/index.php/Bash#The_.22command_not_found.22_hook
 [ -r /usr/share/doc/pkgfile/command-not-found.bash ] && . /usr/share/doc/pkgfile/command-not-found.bash
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias vi="vim"
