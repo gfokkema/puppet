@@ -23,8 +23,9 @@ class site::basic (
   [ 'site::pacaurtimer', ],
 ) {
   $::os[family] ? {
-    'Archlinux' => { 'present' => $install,
-                     'absent'  => $remove, },
+    'Archlinux' =>
+    { 'present' => $install,
+      'absent'  => $remove, },
   }.each | $state, $packages | {
     package { $packages:
       ensure => $state,
@@ -33,14 +34,14 @@ class site::basic (
 
   $::os[family] ? {
     'Archlinux' =>
-    { { 'enable' => true,
-        'ensure' => 'running', } => $running,
-      { 'enable' => false,
-        'ensure' => 'stopped', } => $stopped, },
+    { { 'ensure' => 'running',
+        'enable' => true, } => $running,
+      { 'ensure' => 'stopped',
+        'enable' => false, } => $stopped, },
   }.each | $state, $service | {
     service { $service:
-      enable => $state['enable'],
       ensure => $state['ensure'],
+      enable => $state['enable'],
     }
   }
 

@@ -21,15 +21,15 @@ define site::timer(
     { file => $timer,
       tmpl => $timer_tmpl, },
   ].each | $index, $timer | {
-    file { "${timer['file']}":
-      ensure => 'file',
+    file { $timer['file']:
+      ensure  => 'file',
       path    => "${systemd}/${timer['file']}",
       content => template("site/${timer['tmpl']}"),
     }
   }
 
   service { "${name}.timer":
-    enable => true,
     ensure => 'running',
+    enable => true,
   }
 }
