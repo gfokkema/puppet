@@ -7,7 +7,9 @@ class site::basic (
     'lsof',
     'mlocate',
     'openssh',
+    'pkgfile',
     'tmux',
+    'tree',
     'vim', ],
   Array[String] $remove =
   [ 'vi', ],
