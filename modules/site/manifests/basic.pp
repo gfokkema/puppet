@@ -1,4 +1,4 @@
-class site::basic {
+class site::basic (
   $install =
   [ 'abs',
     'base-devel',
@@ -8,23 +8,24 @@ class site::basic {
     'mlocate',
     'openssh',
     'tmux',
-    'vim', ]
+    'vim', ],
   $remove =
-  [ 'vi', ]
+  [ 'vi', ],
 
-  $basic =
-  { 'present' => $install,
-    'absent'  => $remove, }
-  $service = { 'running' => [ 'sshd', ] }
-
-  $packagehash = $::os[family] ? {
-    'Archlinux' => $basic,
-  }
-
-  $packagehash.each | $state, $packages | {
+  $services = { 'running' => [ 'sshd', 'vmtoolsd', ] },
+) {
+  $::os[family] ? {
+    'Archlinux' => { 'present' => $install,
+                     'absent'  => $remove, },
+  }.each | $state, $packages | {
     package { $packages:
       ensure => $state,
     }
   }
 
+  $services.each | $state, $service | {
+    service { $service:
+      ensure => $state,
+    }
+  }
 }
