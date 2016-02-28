@@ -1,5 +1,5 @@
 class site::basic (
-  $install =
+  Array[String] $install =
   [ 'abs',
     'base-devel',
     'bash-completion',
@@ -9,10 +9,15 @@ class site::basic (
     'openssh',
     'tmux',
     'vim', ],
-  $remove =
+  Array[String] $remove =
   [ 'vi', ],
 
-  $services = { 'running' => [ 'sshd', 'vmtoolsd', ] },
+  Array[String] $running =
+  [ 'puppet',
+    'sshd',
+    'vmtoolsd', ],
+  Array[String] $stopped =
+  [],
 ) {
   $::os[family] ? {
     'Archlinux' => { 'present' => $install,
@@ -23,9 +28,24 @@ class site::basic (
     }
   }
 
-  $services.each | $state, $service | {
+  $::os[family] ? {
+    'Archlinux' =>
+    { { 'enable' => true,
+        'ensure' => 'running', } => $running,
+      { 'enable' => false,
+        'ensure' => 'stopped', } => $stopped, },
+  }.each | $state, $service | {
     service { $service:
-      ensure => $state,
+      enable => $state['enable'],
+      ensure => $state['ensure'],
     }
+  }
+
+  site::timer { 'pacaur': 
+    description => 'PacAur Autoupdater',
+    oncalendar  => 'daily',
+    execstart   => '/usr/bin/bash -c "pacaur -Syu --color never \
+                    --noconfirm --noedit --noprogressbar \
+                    | mail -s \'PacAur Autoupdater\' -v gerlof.fokkema@gmail.com"'
   }
 }

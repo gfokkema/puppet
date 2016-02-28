@@ -9,19 +9,6 @@ class site::config(
 
   String $completion            = '/etc/bash_completion.d',
 ) {
-  service { 'puppet':
-    ensure => 'running',
-    enable => true,
-  }
-
-  site::timer { 'pacaur': 
-    description => 'PacAur Autoupdater',
-    oncalendar  => 'daily',
-    execstart   => '/usr/bin/bash -c "pacaur -Syu --color never \
-                    --noconfirm --noedit --noprogressbar \
-                    | mail -s \'PacAur Autoupdater\' -v gerlof.fokkema@gmail.com"'
-  }
-
   file { '/usr/bin/vi':
     ensure => 'link',
     target => 'vim',
