@@ -18,6 +18,9 @@ class site::basic (
     'vmtoolsd', ],
   Array[String] $stopped =
   [],
+
+  Array[String] $modules =
+  [ 'site::pacaurtimer', ],
 ) {
   $::os[family] ? {
     'Archlinux' => { 'present' => $install,
@@ -41,11 +44,9 @@ class site::basic (
     }
   }
 
-  site::timer { 'pacaur': 
-    description => 'PacAur Autoupdater',
-    oncalendar  => 'daily',
-    execstart   => '/usr/bin/bash -c "pacaur -Syu --color never \
-                    --noconfirm --noedit --noprogressbar \
-                    | mail -s \'PacAur Autoupdater\' -v gerlof.fokkema@gmail.com"'
+  $::os[family] ? {
+    'Archlinux' => $modules,
+  }.each | $module | {
+    class { $module: }
   }
 }
