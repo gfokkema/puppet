@@ -11,7 +11,10 @@ node default {
           oncalendar  => 'weekly',
           execstart   => '/usr/bin/bash -c "ssh root@172.16.0.254 \' \
                           for i in $(esxcli storage core device list | grep -E \'^t10\'); \
-                          do esxcli storage core device smart get -d $i; \
+                          do echo \'------------------------------------------------------\'; \
+                             echo $i; \
+                             echo \'------------------------------------------------------\'; \
+                             esxcli storage core device smart get -d $i; \
                           done\' | mail -s \'SMART status\' -v gerlof.fokkema@gmail.com"'
       }
     }

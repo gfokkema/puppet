@@ -30,5 +30,6 @@ define site::timer(
 
   service { "${name}.timer":
     enable => true,
+    ensure => 'running',
   }
 }
