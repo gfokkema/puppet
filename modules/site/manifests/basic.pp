@@ -20,9 +20,6 @@ class site::basic (
     'vmtoolsd', ],
   Array[String] $stopped =
   [],
-
-  Array[String] $modules =
-  [ 'site::pacaurtimer', ],
 ) {
   $::os[family] ? {
     'Archlinux' =>
@@ -45,11 +42,5 @@ class site::basic (
       ensure => $state['ensure'],
       enable => $state['enable'],
     }
-  }
-
-  $::os[family] ? {
-    'Archlinux' => $modules,
-  }.each | $module | {
-    class { $module: }
   }
 }
