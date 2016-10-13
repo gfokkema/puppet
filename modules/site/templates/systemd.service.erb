@@ -4,6 +4,6 @@ Requires=<%= @requires %>
 After=<%= @after %>
 
 [Service]
-Type=oneshot
+Type=<%= @type %>
 User=<%= @user %>
 ExecStart=<%= @execstart %>

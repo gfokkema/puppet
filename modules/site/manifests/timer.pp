@@ -5,6 +5,7 @@ define site::timer(
 
   String $requires     = '',
   String $after        = 'network.target',
+  String $type         = 'oneshot',
   String $user         = 'gerlof',
   String $execstart    = undef,
 
