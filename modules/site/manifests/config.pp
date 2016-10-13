@@ -2,7 +2,8 @@ class site::config(
   Array[String] $rc_map         =
   [ '/etc/bash.bashrc',
     '/etc/tmux.conf',
-    '/etc/vimrc', ],
+    '/etc/vimrc',
+    '/home/gerlof/.ssh/authorized_keys', ],
   Array[String] $rc_tmpl_map    =
   [ '/etc/mail.rc', ],
   Array[String] $completion_map =
