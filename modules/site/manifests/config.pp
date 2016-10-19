@@ -1,6 +1,7 @@
 class site::config(
   Array[String] $rc_map         =
   [ '/etc/bash.bashrc',
+    '/etc/locale.gen',
     '/etc/tmux.conf',
     '/etc/vimrc',
     '/home/gerlof/.ssh/authorized_keys', ],

@@ -3,7 +3,7 @@ class site::smarttimer {
     'smart':
       description => 'SMART status mailer',
       oncalendar  => 'weekly',
-      execstart   => '/usr/bin/bash -c "ssh root@172.16.0.254 \' \
+      execstart   => '/usr/bin/bash -c "ssh root@192.168.0.254 \' \
                       for i in $(esxcli storage core device list | grep -E \'^t10\'); \
                       do echo \'------------------------------------------------------\'; \
                          echo $i; \
